@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 
 # TROQUE pelo endereço real do site
-Sitemap: https://SEU-SITE.netlify.app/sitemap.xml
+Sitemap: Sitemap: https://garagem617.netlify.app/sitemap.xml
