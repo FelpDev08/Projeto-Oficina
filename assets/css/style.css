@@ -288,3 +288,4 @@ input[type=date]{color-scheme:dark}
 .chip:hover span{border-color:var(--accent)}
 .chip input:checked+span{background:var(--accent);border-color:var(--accent);color:#0b0b0d;font-weight:600}
 .chip input:focus-visible+span{box-shadow:0 0 0 3px #ffcc0055}
+[hidden]{display:none!important}

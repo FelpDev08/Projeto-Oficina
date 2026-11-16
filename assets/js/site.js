@@ -36,6 +36,25 @@
     return "https://wa.me/" + num + "?text=" + encodeURIComponent(msg);
   }
   const WA_DEFAULT = "Olá, vim pelo site da Garagem 617 e gostaria de solicitar um orçamento.";
+  /* Fotos + mensagem no mesmo botão. O link wa.me não anexa imagens; por isso, quando
+     o cliente anexou fotos e o aparelho suporta (celulares), o clique abre o menu de
+     compartilhar com as fotos E a mensagem juntas. Sem fotos/suporte, abre o wa.me normal. */
+  function setupWaButton(a, files, text) {
+    if (!a) return;
+    const list = Array.from(files);
+    a.href = waLink(text + (list.length ? " Vou enviar as fotos do veículo em seguida." : ""));
+    a.onclick = async (e) => {
+      if (!list.length) return;
+      try {
+        if (navigator.canShare && navigator.canShare({ files: list })) {
+          e.preventDefault();
+          await navigator.share({ files: list, text });
+          return;
+        }
+      } catch (err) { if (err && err.name === "AbortError") return; }
+      toast("Na conversa do WhatsApp, toque no clipe 📎 e anexe as fotos do veículo.");
+    };
+  }
   function toast(msg) {
     const t = $("#toast"); t.textContent = msg; t.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3500);
@@ -310,7 +329,8 @@
     });
     function finish(v) {
       v = v || val(); $("#bookStep2").hidden = true; $("#bookDone").hidden = false;
-      $("#bookWa").href = waLink(`Olá, vim pelo site da Garagem 617 e acabei de agendar: ${v.service}, dia ${fmtDate(v.date)} às ${slot}. Veículo: ${v.brand} ${v.model} ${v.year}. Nome: ${v.name}.`);
+      const msg = `Olá, vim pelo site da Garagem 617 e acabei de agendar: ${v.service}, dia ${fmtDate(v.date)} às ${slot}. Veículo: ${v.brand} ${v.model} ${v.year}. Nome: ${v.name}.`;
+      setupWaButton($("#bookWa"), picker.files, msg + " Segue(m) a(s) foto(s) do veículo.");
       $("#bookDone").scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
@@ -331,7 +351,8 @@
     });
     function done(v) {
       v = v || {}; $("#quoteFields").hidden = true; $("#quoteDone").hidden = false;
-      $("#quoteWa").href = waLink(`Olá, vim pelo site da Garagem 617 e acabei de enviar um pedido de orçamento${v.service ? " para " + v.service.toLowerCase() : ""}${v.vehicle ? " (" + v.vehicle + ")" : ""}.`);
+      const msg = `Olá, vim pelo site da Garagem 617 e acabei de enviar um pedido de orçamento${v.service ? " para " + v.service.toLowerCase() : ""}${v.vehicle ? " (" + v.vehicle + ")" : ""}.`;
+      setupWaButton($("#quoteWa"), picker.files, msg + " Segue(m) a(s) foto(s) do veículo.");
       $("#quoteDone").scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }

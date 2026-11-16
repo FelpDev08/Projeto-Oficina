@@ -2,5 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-# TROQUE pelo endereço real do site
-Sitemap: Sitemap: https://garagem617.netlify.app/sitemap.xml
+Sitemap: https://garagem617.vercel.app/sitemap.xml
