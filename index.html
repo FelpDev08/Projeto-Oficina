@@ -41,11 +41,11 @@
       <a href="#trabalhos">Nossos Trabalhos</a>
       <a href="#sobre">Sobre Nós</a>
       <a href="#avaliacoes">Avaliações</a>
-      <a href="#agendamento">Agendamento</a>
+      <a href="#agendamento">Agendar / Orçamento</a>
       <a href="#contato">Contato</a>
-      <a href="#agendamento" class="btn btn--sm nav__cta">AGENDAR HORÁRIO</a>
+      <a href="#agendamento" class="btn btn--sm nav__cta">AGENDAR / ORÇAMENTO</a>
     </nav>
-    <a href="#agendamento" class="btn btn--sm header__cta">AGENDAR HORÁRIO</a>
+    <a href="#agendamento" class="btn btn--sm header__cta">AGENDAR / ORÇAMENTO</a>
     <button class="burger" id="burger" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
   </div>
 </header>
@@ -61,7 +61,7 @@
     <h1 class="reveal" id="heroTitle">Seu carro merece voltar a ser como novo.</h1>
     <p class="hero__sub reveal" id="heroSub">Funilaria, pintura e cuidados automotivos realizados com qualidade, experiência e atenção aos detalhes.</p>
     <div class="hero__btns reveal">
-      <a href="#agendamento" class="btn">AGENDAR HORÁRIO</a>
+      <a href="#agendamento" class="btn">AGENDAR / ORÇAMENTO</a>
       <a href="#trabalhos" class="btn btn--ghost">VER NOSSOS TRABALHOS</a>
     </div>
     <ul class="hero__badges reveal">
@@ -71,7 +71,7 @@
   <a href="#transformacao" class="hero__scroll" aria-label="Rolar para a próxima seção"><span></span></a>
 </section>
 
-<!-- Seção de serviços removida. Este div oculto é necessário para o site.js (preenche a lista do formulário de orçamento). NÃO APAGUE. -->
+<!-- Seção de serviços removida. Este div oculto é necessário para o site.js (preenche os cards de serviço). NÃO APAGUE. -->
 <div id="servicesGrid" hidden></div>
 
 <!-- ANTES E DEPOIS -->
@@ -116,7 +116,7 @@
 <!-- AGENDAMENTO -->
 <section class="sec" id="agendamento">
   <div class="wrap wrap--narrow">
-    <header class="sec__head reveal"><p class="eyebrow">Agendamento online</p><h2>Agende seu atendimento</h2><p class="lead">Escolha a data, veja os horários livres e envie fotos do veículo. Leva menos de 2 minutos.</p></header>
+    <header class="sec__head reveal"><p class="eyebrow">Agendamento e orçamento</p><h2>Agende ou peça seu orçamento</h2><p class="lead">Envie fotos do veículo e descreva o problema. Se quiser, já escolha um dia e horário; se preferir só o orçamento, deixe a data em branco e respondemos pelo WhatsApp.</p></header>
     <div class="card form-card reveal">
       <form id="bookForm" novalidate>
         <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -133,7 +133,7 @@
               <select name="service" required>
                 <option value="">Selecione…</option>
                 <option>Funilaria</option><option>Pintura</option><option>Polimento</option><option>Martelinho de Ouro</option>
-                <option>Para-choque</option><option>Retoque</option><option>Restauração</option><option>Orçamento</option><option>Outro</option>
+                <option>Para-choque</option><option>Retoque</option><option>Restauração</option><option>Outro</option>
               </select>
             </label>
             <label class="f f--full">Descreva o problema do veículo<textarea name="description" rows="4" maxlength="2000" placeholder="Conte o que aconteceu, onde fica o dano, há quanto tempo…"></textarea></label>
@@ -142,69 +142,32 @@
               <label class="drop" id="bookDrop"><input type="file" id="bookFiles" accept="image/jpeg,image/png,image/webp" multiple hidden><b>Toque para enviar fotos</b><small>ou arraste as imagens aqui</small></label>
               <div class="thumbs" id="bookThumbs"></div>
             </div>
-            <label class="f">Data desejada *<input type="date" name="date" id="bookDate" required></label>
+            <label class="f">Data desejada <span class="opt">(opcional)</span><input type="date" name="date" id="bookDate"></label>
             <div class="f">
-              <span class="lbl">Horários disponíveis *</span>
-              <div class="slots" id="slots" role="radiogroup" aria-label="Horários disponíveis"><p class="muted small">Escolha uma data para ver os horários.</p></div>
+              <span class="lbl">Horários disponíveis <span class="opt">(opcional)</span></span>
+              <div class="slots" id="slots" role="radiogroup" aria-label="Horários disponíveis"><p class="muted small">Escolha uma data para ver os horários, ou deixe em branco para receber só o orçamento.</p></div>
             </div>
           </div>
           <p class="err" id="bookErr" role="alert" hidden></p>
-          <button type="button" class="btn btn--block" id="bookReview">REVISAR AGENDAMENTO</button>
+          <button type="button" class="btn btn--block" id="bookReview">REVISAR E ENVIAR</button>
         </div>
 
         <div id="bookStep2" hidden>
-          <h3>Resumo do agendamento</h3>
+          <h3>Confira seus dados</h3>
           <dl class="summary" id="bookSummary"></dl>
           <p class="err" id="bookErr2" role="alert" hidden></p>
           <div class="row">
             <button type="button" class="btn btn--ghost" id="bookBack">VOLTAR E EDITAR</button>
-            <button type="submit" class="btn" id="bookConfirm">CONFIRMAR AGENDAMENTO</button>
+            <button type="submit" class="btn" id="bookConfirm">ENVIAR</button>
           </div>
         </div>
 
         <div id="bookDone" hidden class="done">
           <div class="done__ic">✓</div>
-          <h3>Agendamento realizado com sucesso!</h3>
-          <p>Recebemos sua solicitação. Nossa equipe entrará em contato para confirmar o horário.</p>
+          <h3 id="bookDoneTitle">Solicitação enviada com sucesso!</h3>
+          <p id="bookDoneText">Recebemos sua solicitação. Nossa equipe entrará em contato pelo WhatsApp.</p>
           <a class="btn btn--wa" id="bookWa" target="_blank" rel="noopener">FALAR COM A GARAGEM 617 PELO WHATSAPP</a>
           <p class="muted small" style="margin-top:.6rem">Se você anexou fotos, elas vão junto com a mensagem.</p>
-        </div>
-      </form>
-    </div>
-  </div>
-</section>
-
-<!-- ORÇAMENTO -->
-<section class="sec sec--alt" id="orcamento">
-  <div class="wrap wrap--narrow">
-    <header class="sec__head reveal"><p class="eyebrow">Sem compromisso</p><h2>Solicite seu orçamento</h2><p class="lead">Envie fotos do veículo e descreva o problema. Nossa equipe analisa e responde pelo WhatsApp.</p></header>
-    <div class="card form-card reveal">
-      <form id="quoteForm" novalidate>
-        <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <div id="quoteFields">
-          <div class="fgrid">
-            <label class="f">Nome *<input name="name" required minlength="3" maxlength="120" autocomplete="name"></label>
-            <label class="f">WhatsApp *<input name="phone" required type="tel" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" maxlength="20"></label>
-            <label class="f">Veículo (marca e modelo) *<input name="vehicle" required maxlength="100" placeholder="Ex.: Fiat Uno"></label>
-            <label class="f">Ano *<input name="year" required inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="2018"></label>
-            <label class="f f--full">Serviço desejado *
-              <select name="service" id="quoteService" required><option value="">Selecione…</option></select>
-            </label>
-            <label class="f f--full">Descrição do problema<textarea name="description" rows="4" maxlength="2000"></textarea></label>
-            <div class="f f--full">
-              <span class="lbl">Fotos do veículo <span class="opt">(até 8)</span></span>
-              <label class="drop" id="quoteDrop"><input type="file" id="quoteFiles" accept="image/jpeg,image/png,image/webp" multiple hidden><b>Toque para enviar fotos</b><small>ou arraste as imagens aqui</small></label>
-              <div class="thumbs" id="quoteThumbs"></div>
-            </div>
-          </div>
-          <p class="err" id="quoteErr" role="alert" hidden></p>
-          <button type="submit" class="btn btn--block" id="quoteBtn">SOLICITAR ORÇAMENTO</button>
-        </div>
-        <div id="quoteDone" hidden class="done">
-          <div class="done__ic">✓</div>
-          <h3>Pedido de orçamento enviado!</h3>
-          <p>Vamos analisar as informações e fotos e retornar pelo WhatsApp.</p>
-          <a class="btn btn--wa" id="quoteWa" target="_blank" rel="noopener">ACELERAR PELO WHATSAPP</a>
         </div>
       </form>
     </div>
@@ -252,7 +215,7 @@
     </div>
     <div>
       <h4>Links rápidos</h4>
-      <ul class="flinks"><li><a href="#inicio">Início</a></li><li><a href="#trabalhos">Trabalhos</a></li><li><a href="#sobre">Sobre</a></li><li><a href="#agendamento">Agendamento</a></li><li><a href="#contato">Contato</a></li></ul>
+      <ul class="flinks"><li><a href="#inicio">Início</a></li><li><a href="#trabalhos">Trabalhos</a></li><li><a href="#sobre">Sobre</a></li><li><a href="#agendamento">Agendar / Orçamento</a></li><li><a href="#contato">Contato</a></li></ul>
     </div>
     <div>
       <h4>Redes sociais</h4>
