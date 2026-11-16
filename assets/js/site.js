@@ -102,24 +102,16 @@
         <h3>${esc(s.title)}</h3><p>${esc(s.description)}</p>
         <div class="scard__links">
           <a class="btn btn--sm" href="${esc(waLink(msg))}" target="_blank" rel="noopener">SOLICITAR ORÇAMENTO</a>
-          <a class="scard__alt" href="#orcamento" data-pick="${esc(s.title)}">ou preencha o formulário</a>
+          <a class="scard__alt" href="#agendamento" data-pick="${esc(s.title)}">ou preencha o formulário</a>
         </div></article>`;
     }).join("");
-      // Serviços em checkboxes (seleção múltipla) no formulário único
-    const box = $("#serviceChecks");
-    if (box) {
-      const opts = list.map((s) => s.title).concat(["Outro"]);
-      box.innerHTML = opts.map((t) =>
-        `<label><input type="checkbox" name="service" value="${esc(t)}"> ${esc(t)}</label>`
-      ).join("");
-    }
     // Links dos cards de serviço apontam para o formulário único
     $$("[data-pick]").forEach((a) => {
       a.addEventListener("click", (e) => {
         e.preventDefault();
         const target = a.dataset.pick;
-        const cb = $$('#serviceChecks input[type=checkbox]').find((c) => c.value === target);
-        if (cb) cb.checked = true;
+        const sel = $('#bookForm select[name="service"]');
+        if (sel) { const opt = [...sel.options].find((o) => o.value === target || o.text === target); if (opt) sel.value = opt.value; }
         location.hash = "#agendamento";
         setTimeout(() => $("#agendamento")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
       });
@@ -305,11 +297,12 @@
 
     const val = () => Object.fromEntries(new FormData(form).entries());
     $("#bookReview").onclick = () => {
-      let m = validate(form, ["name", "phone", "brand", "model", "year", "service", "date"]);
-      if (!m && !slot) m = "Escolha um horário disponível.";
+      let m = validate(form, ["name", "phone", "brand", "model", "year", "service"]);
+      if (!m && dateEl.value && !slot) m = "Escolha um horário disponível ou limpe a data para pedir só o orçamento.";
+      if (!m && !dateEl.value) slot = "";
       showErr("#bookErr", m); if (m) return;
       const v = val();
-      $("#bookSummary").innerHTML = [["Cliente", v.name], ["Veículo", `${v.brand} ${v.model} (${v.year})${v.plate ? " — " + v.plate.toUpperCase() : ""}`], ["Serviço", v.service], ["Data", fmtDate(v.date)], ["Horário", slot], ["Telefone", v.phone]]
+      $("#bookSummary").innerHTML = [["Cliente", v.name], ["Veículo", `${v.brand} ${v.model} (${v.year})${v.plate ? " — " + v.plate.toUpperCase() : ""}`], ["Serviço", v.service], ...(v.date ? [["Data", fmtDate(v.date)], ["Horário", slot]] : [["Tipo", "Somente orçamento (sem data marcada)"]]), ["Telefone", v.phone]]
         .map(([k, x]) => `<dt>${k}</dt><dd>${esc(x)}</dd>`).join("");
       $("#bookStep1").hidden = true; $("#bookStep2").hidden = false; $("#bookSummary").scrollIntoView({ behavior: "smooth", block: "center" });
     };
@@ -320,40 +313,28 @@
       const v = val(), btn = $("#bookConfirm"); btn.disabled = true; btn.textContent = "ENVIANDO…";
       try {
         const photos = await G.uploadPrivate(picker.files);
-        await G.createBooking({ name: v.name.trim(), phone: v.phone.trim(), email: (v.email || "").trim(), brand: v.brand.trim(), model: v.model.trim(), year: v.year, plate: (v.plate || "").toUpperCase().trim(), service: v.service, date: v.date, time: slot, description: (v.description || "").trim(), photos });
+        if (v.date && slot) {
+          await G.createBooking({ name: v.name.trim(), phone: v.phone.trim(), email: (v.email || "").trim(), brand: v.brand.trim(), model: v.model.trim(), year: v.year, plate: (v.plate || "").toUpperCase().trim(), service: v.service, date: v.date, time: slot, description: (v.description || "").trim(), photos });
+        } else {
+          const extra = [v.plate ? "Placa: " + v.plate.toUpperCase().trim() : "", (v.email || "").trim() ? "E-mail: " + v.email.trim() : ""].filter(Boolean).join(" | ");
+          await G.createQuote({ name: v.name.trim(), phone: v.phone.trim(), vehicle: `${v.brand.trim()} ${v.model.trim()}`, year: v.year, service: v.service, description: ((v.description || "").trim() + (extra ? "\n" + extra : "")).trim(), photos });
+        }
         localStorage.setItem("g617_last", Date.now()); finish(v);
       } catch (err) {
         showErr("#bookErr2", err.message || "Erro ao enviar. Tente novamente.");
         if (/horário/i.test(err.message)) { $("#bookStep2").hidden = true; $("#bookStep1").hidden = false; dateEl.dispatchEvent(new Event("change")); }
-      } finally { btn.disabled = false; btn.textContent = "CONFIRMAR AGENDAMENTO"; }
+      } finally { btn.disabled = false; btn.textContent = "ENVIAR"; }
     });
     function finish(v) {
       v = v || val(); $("#bookStep2").hidden = true; $("#bookDone").hidden = false;
-      const msg = `Olá, vim pelo site da Garagem 617 e acabei de agendar: ${v.service}, dia ${fmtDate(v.date)} às ${slot}. Veículo: ${v.brand} ${v.model} ${v.year}. Nome: ${v.name}.`;
+      const isBooking = !!(v.date && slot);
+      $("#bookDoneTitle").textContent = isBooking ? "Agendamento realizado com sucesso!" : "Pedido de orçamento enviado!";
+      $("#bookDoneText").textContent = isBooking ? "Recebemos sua solicitação. Nossa equipe entrará em contato para confirmar o horário." : "Vamos analisar as informações e fotos e retornar pelo WhatsApp.";
+      const msg = isBooking
+        ? `Olá, vim pelo site da Garagem 617 e acabei de agendar: ${v.service}, dia ${fmtDate(v.date)} às ${slot}. Veículo: ${v.brand} ${v.model} ${v.year}. Nome: ${v.name}.`
+        : `Olá, vim pelo site da Garagem 617 e acabei de enviar um pedido de orçamento para ${(v.service || "").toLowerCase()} (${v.brand} ${v.model} ${v.year}). Nome: ${v.name}.`;
       setupWaButton($("#bookWa"), picker.files, msg + " Segue(m) a(s) foto(s) do veículo.");
       $("#bookDone").scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  }
-
-  /* ---------- Orçamento ---------- */
-  function initQuote() {
-    const form = $("#quoteForm"), picker = filePicker("#quoteDrop", "#quoteFiles", "#quoteThumbs");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault(); const m = validate(form, ["name", "phone", "vehicle", "year", "service"]); showErr("#quoteErr", m); if (m) return;
-      const sp = antiSpam(form); if (sp === "silent") return done(); if (sp) return showErr("#quoteErr", sp);
-      const v = Object.fromEntries(new FormData(form).entries()), btn = $("#quoteBtn"); btn.disabled = true; btn.textContent = "ENVIANDO…";
-      try {
-        const photos = await G.uploadPrivate(picker.files);
-        await G.createQuote({ name: v.name.trim(), phone: v.phone.trim(), vehicle: v.vehicle.trim(), year: v.year, service: v.service, description: (v.description || "").trim(), photos });
-        localStorage.setItem("g617_last", Date.now()); done(v);
-      } catch (err) { showErr("#quoteErr", err.message || "Erro ao enviar. Tente novamente."); }
-      finally { btn.disabled = false; btn.textContent = "SOLICITAR ORÇAMENTO"; }
-    });
-    function done(v) {
-      v = v || {}; $("#quoteFields").hidden = true; $("#quoteDone").hidden = false;
-      const msg = `Olá, vim pelo site da Garagem 617 e acabei de enviar um pedido de orçamento${v.service ? " para " + v.service.toLowerCase() : ""}${v.vehicle ? " (" + v.vehicle + ")" : ""}.`;
-      setupWaButton($("#quoteWa"), picker.files, msg + " Segue(m) a(s) foto(s) do veículo.");
-      $("#quoteDone").scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
 
@@ -363,7 +344,7 @@
     try { [S, DATA] = await Promise.all([G.getSettings(), G.listPublic()]); }
     catch (e) { console.error(e); S = await G.getSettings().catch(() => ({})); toast("Alguns dados não puderam ser carregados."); }
     applySettings(); renderServices(); renderBA(); renderGallery();
-    initBooking(); initQuote(); observe();
+    initBooking(); observe();
     if (!G.LIVE) console.info("GARAGEM 617: modo demonstração (Supabase não configurado).");
   }
   init();
